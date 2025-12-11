@@ -1,0 +1,51 @@
+Comparing objectdownload_event vs FILEDOWNLOAD tables
+
+============================================================
+
+1. Testing objectdownload_event table...
+Initiating login request with your identity provider. A browser window should have opened for you to complete the login. If you can't see it, check existing browser windows, or your OS settings. Press CTRL+C to abort and try again...
+Going to open: https://mqzfhld-vp00034.snowflakecomputing.com/console/login?login_name=james.moon%40sagebase.org&browser_mode_redirect_port=55572&proof_key=eSOZ6nqxt3yFH%2BEYYVVkHlPTXoM%2BRZLJLSDd%2F5H7IeE%3D to authenticate...
+✓ Query successful
+   FILE_COUNT  PROJECT_COUNT  ACTIVE_DAYS FIRST_ACTIVITY LAST_ACTIVITY
+0         493             61          128     2025-01-02    2025-12-09
+
+2. Testing FILEDOWNLOAD table...
+✓ Query successful
+   FILE_COUNT  PROJECT_COUNT  ACTIVE_DAYS          FIRST_ACTIVITY           LAST_ACTIVITY
+0         955             61          128 2025-01-02 15:44:23.744 2025-12-09 21:00:54.129
+
+3. Comparison:
+------------------------------------------------------------
+⚠ FILE_COUNT          : event=     493 | filedownload=     955 | diff=    +462 (+93.7%)
+✓ PROJECT_COUNT       : event=      61 | filedownload=      61 | diff=      +0 (+0.0%)
+✓ ACTIVE_DAYS         : event=     128 | filedownload=     128 | diff=      +0 (+0.0%)
+
+4. Schema comparison:
+------------------------------------------------------------
+objectdownload_event table structure:
+                  COLUMN_NAME      DATA_TYPE
+0                   TIMESTAMP  TIMESTAMP_NTZ
+1                     USER_ID         NUMBER
+2                  PROJECT_ID         NUMBER
+3              FILE_HANDLE_ID         NUMBER
+4   DOWNLOADED_FILE_HANDLE_ID         NUMBER
+5       ASSOCIATION_OBJECT_ID         NUMBER
+6     ASSOCIATION_OBJECT_TYPE           TEXT
+7                       STACK           TEXT
+8                    INSTANCE           TEXT
+9                 RECORD_DATE           DATE
+10                 SESSION_ID           TEXT
+
+FILEDOWNLOAD table structure:
+                  COLUMN_NAME      DATA_TYPE
+0                   TIMESTAMP  TIMESTAMP_NTZ
+1                     USER_ID         NUMBER
+2                  PROJECT_ID         NUMBER
+3              FILE_HANDLE_ID         NUMBER
+4   DOWNLOADED_FILE_HANDLE_ID         NUMBER
+5       ASSOCIATION_OBJECT_ID         NUMBER
+6     ASSOCIATION_OBJECT_TYPE           TEXT
+7                       STACK           TEXT
+8                    INSTANCE           TEXT
+9                 RECORD_DATE           DATE
+10                 SESSION_ID           TEXT
