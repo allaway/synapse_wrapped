@@ -557,6 +557,40 @@ def get_html_template() -> str:
             box-shadow: 0 0 40px rgba(0, 255, 247, 0.1);
         }
         
+        /* Interactive wordcloud */
+        .slide-wordcloud .slide-content {
+            padding-top: 80px;
+        }
+        
+        .slide-wordcloud .metric-label {
+            margin-top: 20px;
+        }
+        
+        .slide-wordcloud .metric-value {
+            font-size: clamp(2.8rem, 12.6vw, 8.4rem);
+        }
+        
+        #wordcloud-container {
+            width: 100%;
+            max-width: 1000px;
+            height: 500px;
+            margin: 30px auto;
+            position: relative;
+        }
+        
+        .wordcloud-word {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+            position: absolute;
+        }
+        
+        .wordcloud-word:hover {
+            transform: scale(1.2);
+            z-index: 10;
+            filter: drop-shadow(0 0 8px currentColor);
+        }
+        
         /* Interactive network */
         #network-container {
             width: 100%;
@@ -966,11 +1000,36 @@ def get_html_template() -> str:
         /* Badges */
         .badges-container {
             display: flex;
-            justify-content: center;
             gap: 25px;
-            flex-wrap: wrap;
             margin: 30px auto;
-            max-width: 800px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 20px 50%;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            scrollbar-color: var(--neon-cyan) rgba(18, 18, 26, 0.5);
+            width: 100%;
+            max-width: 100%;
+            position: relative;
+        }
+        
+        .badges-container::-webkit-scrollbar {
+            height: 8px;
+        }
+        
+        .badges-container::-webkit-scrollbar-track {
+            background: rgba(18, 18, 26, 0.5);
+            border-radius: 10px;
+        }
+        
+        .badges-container::-webkit-scrollbar-thumb {
+            background: var(--neon-cyan);
+            border-radius: 10px;
+        }
+        
+        .badges-container::-webkit-scrollbar-thumb:hover {
+            background: var(--neon-magenta);
         }
         
         .badge {
@@ -979,8 +1038,9 @@ def get_html_template() -> str:
             border-radius: 20px;
             padding: 25px 30px;
             text-align: center;
-            min-width: 180px;
+            min-width: 200px;
             max-width: 220px;
+            flex-shrink: 0;
             transition: all 0.3s ease;
         }
         
@@ -1260,13 +1320,29 @@ def get_html_template() -> str:
         </div>
         </div>
         
-        <!-- Slide 1: Files Downloaded -->
+        <!-- Slide 1: Your Synapse Year Started -->
         <div class="slide" data-slide="1">
             <div class="slide-content">
-                <div class="metric-label animate-in">This year, you downloaded</div>
-                <div class="metric-value animate-in">{file_count}</div>
-                <div class="metric-unit animate-in">files</div>
-                <div class="metric-context animate-in">That's {total_size} of scientific data flowing through your research pipeline.</div>
+                <div class="metric-label animate-in">Your {year} Synapse Journey Began On...</div>
+                <div class="first-download-card animate-in">
+                    <div class="first-download-date">{first_download_date}</div>
+                    <div class="first-download-file">📁 {first_download_file}</div>
+                    <div class="first-download-project">from {first_download_project}</div>
+                </div>
+                <div class="busiest-day-card animate-in">
+                    <div class="metric-label" style="margin-bottom: 10px;">Your Busiest Day</div>
+                    <div class="busiest-day-date">{busiest_day_date}</div>
+                    <div class="busiest-day-stats">
+                        <div class="busiest-stat">
+                            <div class="busiest-stat-value">{busiest_day_downloads}</div>
+                            <div class="busiest-stat-label">downloads</div>
+                        </div>
+                        <div class="busiest-stat">
+                            <div class="busiest-stat-value">{busiest_day_size}</div>
+                            <div class="busiest-stat-label">data</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -1280,8 +1356,18 @@ def get_html_template() -> str:
             </div>
         </div>
         
-        <!-- Slide 3: Activity Heatmap -->
+        <!-- Slide 3: Files Downloaded -->
         <div class="slide" data-slide="3">
+            <div class="slide-content">
+                <div class="metric-label animate-in">This year, you downloaded</div>
+                <div class="metric-value animate-in">{file_count}</div>
+                <div class="metric-unit animate-in">files</div>
+                <div class="metric-context animate-in">That's {total_size} of scientific data flowing through your research pipeline.</div>
+            </div>
+        </div>
+        
+        <!-- Slide 4: Activity Heatmap -->
+        <div class="slide" data-slide="4">
             <div class="slide-content">
                 <div class="metric-label animate-in">Your Activity Throughout {year}</div>
                 {heatmap_html}
@@ -1291,8 +1377,31 @@ def get_html_template() -> str:
             </div>
         </div>
         
-        <!-- Slide 4: Projects Explored -->
-        <div class="slide slide-wordcloud" data-slide="4">
+        <!-- Slide 5: Activity by Hour -->
+        <div class="slide" data-slide="5">
+            <div class="slide-content">
+                <div class="metric-label animate-in">When Do You Download?</div>
+                <div class="metric-context animate-in" style="margin-bottom: 10px;">Times shown in {timezone_display}</div>
+                <div class="radial-chart-container animate-in" id="radial-chart"></div>
+                <div class="time-patterns animate-in">
+                    <div class="time-card {night_owl_class}">
+                        <div class="time-value">{night_owl_score}%</div>
+                        <div class="time-label">🌙 Night Owl</div>
+                    </div>
+                    <div class="time-card {early_bird_class}">
+                        <div class="time-value">{early_bird_score}%</div>
+                        <div class="time-label">🌅 Early Bird</div>
+                    </div>
+                    <div class="time-card {weekend_class}">
+                        <div class="time-value">{weekend_score}%</div>
+                        <div class="time-label">📅 Weekend</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 6: Projects Explored -->
+        <div class="slide slide-wordcloud" data-slide="6">
             <div class="slide-content">
                 <div class="metric-label animate-in">You explored data from</div>
                 <div class="metric-value animate-in">{project_count}</div>
@@ -1301,16 +1410,16 @@ def get_html_template() -> str:
             </div>
         </div>
         
-        <!-- Slide 5: Top Projects Downloaded From -->
-        <div class="slide" data-slide="5">
+        <!-- Slide 7: Top Projects Downloaded From -->
+        <div class="slide" data-slide="7">
             <div class="slide-content">
                 <div class="metric-label animate-in">Your Top Projects (by downloads)</div>
                 {top_projects_html}
             </div>
         </div>
         
-        <!-- Slide 6: Content Created -->
-        <div class="slide" data-slide="6">
+        <!-- Slide 8: Content Created -->
+        <div class="slide" data-slide="8">
             <div class="slide-content">
                 <div class="metric-label animate-in">You created</div>
                 <div class="metric-value animate-in">{total_creations}</div>
@@ -1336,17 +1445,8 @@ def get_html_template() -> str:
             </div>
         </div>
         
-        <!-- Slide 7: Collaboration Network -->
-        <div class="slide" data-slide="7">
-            <div class="slide-content">
-                <div class="metric-label animate-in">Your Research Network</div>
-                <div class="metric-context animate-in" style="margin-top: 10px; margin-bottom: 10px;">Users who downloaded the same files as you</div>
-                <div id="network-container" class="animate-in"></div>
-            </div>
-        </div>
-        
-        <!-- Slide 8: Users Like You -->
-        <div class="slide" data-slide="8">
+        <!-- Slide 9: Users Like You -->
+        <div class="slide" data-slide="9">
             <div class="slide-content">
                 <div class="metric-label animate-in">Users Like You</div>
                 <div class="metric-context animate-in" style="margin-bottom: 20px;">Researchers with similar download patterns</div>
@@ -1354,67 +1454,17 @@ def get_html_template() -> str:
             </div>
         </div>
         
-        <!-- Slide 9: Your Synapse Year Started -->
-        <div class="slide" data-slide="9">
-            <div class="slide-content">
-                <div class="metric-label animate-in">Your {year} Synapse Journey Began On...</div>
-                <div class="first-download-card animate-in">
-                    <div class="first-download-date">{first_download_date}</div>
-                    <div class="first-download-file">📁 {first_download_file}</div>
-                    <div class="first-download-project">from {first_download_project}</div>
-                </div>
-                <div class="busiest-day-card animate-in">
-                    <div class="metric-label" style="margin-bottom: 10px;">Your Busiest Day</div>
-                    <div class="busiest-day-date">{busiest_day_date}</div>
-                    <div class="busiest-day-stats">
-                        <div class="busiest-stat">
-                            <div class="busiest-stat-value">{busiest_day_downloads}</div>
-                            <div class="busiest-stat-label">downloads</div>
-                        </div>
-                        <div class="busiest-stat">
-                            <div class="busiest-stat-value">{busiest_day_size}</div>
-                            <div class="busiest-stat-label">data</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Slide 10: Activity by Hour -->
+        <!-- Slide 10: Collaboration Network -->
         <div class="slide" data-slide="10">
             <div class="slide-content">
-                <div class="metric-label animate-in">When Do You Download?</div>
-                <div class="metric-context animate-in" style="margin-bottom: 10px;">Times shown in {timezone_display}</div>
-                <div class="radial-chart-container animate-in" id="radial-chart"></div>
-                <div class="time-patterns animate-in">
-                    <div class="time-card {night_owl_class}">
-                        <div class="time-value">{night_owl_score}%</div>
-                        <div class="time-label">🌙 Night Owl</div>
-                    </div>
-                    <div class="time-card {early_bird_class}">
-                        <div class="time-value">{early_bird_score}%</div>
-                        <div class="time-label">🌅 Early Bird</div>
-                    </div>
-                    <div class="time-card {weekend_class}">
-                        <div class="time-value">{weekend_score}%</div>
-                        <div class="time-label">📅 Weekend</div>
-                    </div>
-                </div>
+                <div class="metric-label animate-in">Your Research Network</div>
+                <div class="metric-context animate-in" style="margin-top: 10px; margin-bottom: 10px;">Users who downloaded the same files as you</div>
+                <div id="network-container" class="animate-in"></div>
             </div>
         </div>
         
-        <!-- Slide 11: Your Badges -->
+        <!-- Slide 11: Data Size Stats -->
         <div class="slide" data-slide="11">
-            <div class="slide-content">
-                <div class="metric-label animate-in">Your Badges</div>
-                <div class="badges-container animate-in">
-                    {badges_html}
-                </div>
-            </div>
-        </div>
-        
-        <!-- Slide 12: Data Size Stats -->
-        <div class="slide" data-slide="12">
             <div class="slide-content">
                 <div class="metric-label animate-in">Your Biggest Download</div>
                 <div class="largest-file-card animate-in">
@@ -1436,12 +1486,22 @@ def get_html_template() -> str:
             </div>
         </div>
         
-        <!-- Slide 13: Download Growth -->
-        <div class="slide" data-slide="13">
+        <!-- Slide 12: Download Growth -->
+        <div class="slide" data-slide="12">
             <div class="slide-content">
                 <div class="metric-label animate-in">Your Download Journey</div>
                 <div class="metric-context animate-in">Cumulative data downloaded throughout {year}</div>
                 <div class="growth-chart-container animate-in" id="growth-chart"></div>
+            </div>
+        </div>
+        
+        <!-- Slide 13: Your Badges -->
+        <div class="slide" data-slide="13">
+            <div class="slide-content">
+                <div class="metric-label animate-in">Your Badges</div>
+                <div class="badges-container animate-in">
+                    {badges_html}
+                </div>
             </div>
         </div>
         
@@ -1533,14 +1593,17 @@ def get_html_template() -> str:
                 if (index === currentSlide) {
                     slide.classList.add('active');
                     // Initialize visualizations on specific slides
-                    if (index === 7) {
+                    if (index === 10) {
                         setTimeout(initNetwork, 300);
                     }
-                    if (index === 10) {
+                    if (index === 5) {
                         setTimeout(initRadialChart, 300);
                     }
-                    if (index === 13) {
+                    if (index === 12) {
                         setTimeout(initGrowthChart, 300);
+                    }
+                    if (index === 13) {
+                        setTimeout(initBadgeCarousel, 300);
                     }
                 } else if (index < currentSlide) {
                     slide.classList.add('prev');
@@ -1820,6 +1883,79 @@ def get_html_template() -> str:
             svg.append('g')
                 .attr('class', 'chart-axis')
                 .call(d3.axisLeft(y).ticks(5).tickFormat(formatBytes));
+        }
+        
+        let badgeCarouselInitialized = false;
+        let badgeCarouselInterval = null;
+        
+        function initBadgeCarousel() {
+            if (badgeCarouselInitialized) return;
+            badgeCarouselInitialized = true;
+            
+            const container = document.querySelector('.badges-container');
+            if (!container) return;
+            
+            const badges = container.querySelectorAll('.badge');
+            if (badges.length === 0) return;
+            
+            // Center the first badge initially
+            const firstBadge = badges[0];
+            const badgeWidth = firstBadge.offsetWidth + 25; // width + gap
+            const containerWidth = container.offsetWidth;
+            const scrollPosition = (firstBadge.offsetLeft - containerWidth / 2) + (badgeWidth / 2);
+            container.scrollLeft = scrollPosition;
+            
+            let currentIndex = 0;
+            const totalBadges = badges.length;
+            
+            // Auto-rotate carousel
+            function rotateCarousel() {
+                currentIndex = (currentIndex + 1) % totalBadges;
+                const targetBadge = badges[currentIndex];
+                const badgeWidth = targetBadge.offsetWidth + 25;
+                const containerWidth = container.offsetWidth;
+                const scrollPosition = (targetBadge.offsetLeft - containerWidth / 2) + (badgeWidth / 2);
+                
+                container.scrollTo({
+                    left: scrollPosition,
+                    behavior: 'smooth'
+                });
+            }
+            
+            // Start auto-rotation (every 3 seconds)
+            badgeCarouselInterval = setInterval(rotateCarousel, 3000);
+            
+            // Pause on hover
+            container.addEventListener('mouseenter', () => {
+                if (badgeCarouselInterval) {
+                    clearInterval(badgeCarouselInterval);
+                    badgeCarouselInterval = null;
+                }
+            });
+            
+            // Resume on mouse leave
+            container.addEventListener('mouseleave', () => {
+                if (!badgeCarouselInterval) {
+                    badgeCarouselInterval = setInterval(rotateCarousel, 3000);
+                }
+            });
+            
+            // Pause on manual scroll
+            let scrollTimeout;
+            container.addEventListener('scroll', () => {
+                if (badgeCarouselInterval) {
+                    clearInterval(badgeCarouselInterval);
+                    badgeCarouselInterval = null;
+                }
+                
+                // Resume after 5 seconds of no scrolling
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => {
+                    if (!badgeCarouselInterval) {
+                        badgeCarouselInterval = setInterval(rotateCarousel, 3000);
+                    }
+                }, 5000);
+            });
         }
         
         function initNetwork() {
@@ -2197,8 +2333,9 @@ def generate_most_active_months_html(monthly_df: pd.DataFrame) -> str:
 
 
 def generate_interactive_wordcloud_html(project_names: List[str], max_words: int = 60) -> str:
-    """Generate an interactive HTML word cloud from project names."""
+    """Generate an interactive D3.js word cloud from project names."""
     from collections import Counter
+    import json
     
     if not project_names:
         return ""
@@ -2239,46 +2376,106 @@ def generate_interactive_wordcloud_html(project_names: List[str], max_words: int
     if not top_words:
         return ""
     
-    # Calculate size buckets based on frequency
+    # Prepare data for D3 word cloud
     max_freq = top_words[0][1]
     min_freq = top_words[-1][1] if len(top_words) > 1 else max_freq
-    freq_range = max(max_freq - min_freq, 1)
     
-    # Color classes to cycle through
-    colors = ['cyan', 'magenta', 'purple', 'green', 'coral', 'teal']
+    # Color palette
+    colors = ['#00ffff', '#ff00ff', '#b19cd9', '#00ff88', '#ff6b6b', '#4ecdc4']
     
-    # Generate HTML for each word
-    word_spans = []
-    import random
-    random.seed(42)  # Consistent coloring
-    shuffled_words = list(top_words)
-    random.shuffle(shuffled_words)  # Shuffle for visual variety
+    word_data = []
+    for i, (word, freq) in enumerate(top_words):
+        word_data.append({
+            'text': word.capitalize(),
+            'size': freq,
+            'color': colors[i % len(colors)]
+        })
     
-    for i, (word, freq) in enumerate(shuffled_words):
-        # Calculate size class (1-6 based on frequency)
-        normalized = (freq - min_freq) / freq_range
-        size_class = min(6, max(1, int(normalized * 5) + 1))
-        
-        # Pick a color
-        color_class = colors[i % len(colors)]
-        
-        # Capitalize first letter for display
-        display_word = word.capitalize()
-        
-        word_spans.append(
-            f'<span class="wordcloud-word size-{size_class} color-{color_class}" '
-            f'title="{freq} occurrence{"s" if freq > 1 else ""}">{display_word}</span>'
-        )
+    word_data_json = json.dumps(word_data)
     
-    return f'''<div class="interactive-wordcloud animate-in">
-        {" ".join(word_spans)}
-    </div>'''
+    return f'''<div id="wordcloud-container" class="animate-in"></div>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/jasondavies/d3-cloud@master/build/d3.layout.cloud.js"></script>
+    <script>
+        (function() {{
+            const data = {word_data_json};
+            const width = 1000;
+            const height = 500;
+            
+            // Scale for font sizes
+            const maxSize = data[0].size;
+            const minSize = data[data.length - 1].size;
+            const sizeScale = d3.scaleLinear()
+                .domain([minSize, maxSize])
+                .range([20, 80]);
+            
+            const layout = d3.layout.cloud()
+                .size([width, height])
+                .words(data.map(d => ({{
+                    text: d.text,
+                    size: sizeScale(d.size),
+                    color: d.color
+                }})))
+                .padding(5)
+                .rotate(() => ~~(Math.random() * 2) * 90)  // 0 or 90 degrees
+                .font("Orbitron, sans-serif")
+                .fontSize(d => d.size)
+                .on("end", draw);
+            
+            layout.start();
+            
+            function draw(words) {{
+                const svg = d3.select("#wordcloud-container")
+                    .append("svg")
+                    .attr("width", width)
+                    .attr("height", height)
+                    .append("g")
+                    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+                
+                const text = svg.selectAll("text")
+                    .data(words)
+                    .enter().append("text")
+                    .style("font-size", d => d.size + "px")
+                    .style("font-family", "Orbitron, sans-serif")
+                    .style("font-weight", "600")
+                    .style("fill", d => d.color)
+                    .attr("text-anchor", "middle")
+                    .attr("transform", d => "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")")
+                    .text(d => d.text)
+                    .style("cursor", "pointer")
+                    .on("mouseover", function(event, d) {{
+                        d3.select(this)
+                            .transition()
+                            .duration(200)
+                            .style("font-size", (d.size * 1.3) + "px")
+                            .style("filter", "drop-shadow(0 0 8px " + d.color + ")");
+                    }})
+                    .on("mouseout", function(event, d) {{
+                        d3.select(this)
+                            .transition()
+                            .duration(200)
+                            .style("font-size", d.size + "px")
+                            .style("filter", "none");
+                    }})
+                    .append("title")
+                    .text(d => {{
+                        const wordData = data.find(w => w.text.toLowerCase() === d.text.toLowerCase());
+                        return wordData ? wordData.size + " occurrence" + (wordData.size > 1 ? "s" : "") : "";
+                    }});
+            }}
+        }})();
+    </script>'''
 
 
 def generate_badges_html(project_count: int, percentile_rank: float, 
                          controlled_projects: int, open_projects: int,
-                         night_owl_score: float, early_bird_score: float) -> str:
-    """Generate HTML for achievement badges."""
+                         night_owl_score: float, early_bird_score: float,
+                         file_count: int = 0, total_size_gb: float = 0,
+                         active_days: int = 0, weekend_score: float = 0,
+                         total_creations: int = 0, files_created: int = 0,
+                         comparison_ratio: float = 1.0, busiest_day_downloads: int = 0,
+                         collaborator_count: int = 0) -> str:
+    """Generate HTML for achievement badges with varied criteria."""
     badges = []
     
     # Data Explorer Badge (10+ projects)
@@ -2288,21 +2485,37 @@ def generate_badges_html(project_count: int, percentile_rank: float,
             'title': 'Data Explorer',
             'description': f'Explored {project_count} unique projects this year',
             'earned': True,
-            'special': project_count >= 25
+            'special': project_count >= 50
+        })
+    elif project_count >= 5:
+        badges.append({
+            'icon': '🔍',
+            'title': 'Project Scout',
+            'description': f'Discovered {project_count} unique projects',
+            'earned': True,
+            'special': False
         })
     
     # Power User Badge (top percentile)
-    if percentile_rank <= 10:
+    if percentile_rank <= 5:
         badges.append({
             'icon': '⚡',
             'title': 'Power User',
             'description': f'Top {percentile_rank:.0f}% of all Synapse downloaders',
             'earned': True,
-            'special': percentile_rank <= 5
+            'special': True
+        })
+    elif percentile_rank <= 10:
+        badges.append({
+            'icon': '🚀',
+            'title': 'Heavy User',
+            'description': f'Top {percentile_rank:.0f}% of Synapse users',
+            'earned': True,
+            'special': False
         })
     elif percentile_rank <= 25:
         badges.append({
-            'icon': '🚀',
+            'icon': '📊',
             'title': 'Active Researcher',
             'description': f'Top {percentile_rank:.0f}% of Synapse users',
             'earned': True,
@@ -2313,41 +2526,265 @@ def generate_badges_html(project_count: int, percentile_rank: float,
     total_access = controlled_projects + open_projects
     if total_access > 0:
         controlled_ratio = controlled_projects / total_access
-        if controlled_ratio >= 0.5:
+        if controlled_ratio >= 0.7:
             badges.append({
                 'icon': '🔐',
                 'title': 'Sensitive Data Superstar',
                 'description': f'Trusted with controlled-access data from {controlled_projects} projects',
                 'earned': True,
-                'special': controlled_ratio >= 0.7
+                'special': True
             })
-        else:
+        elif controlled_ratio >= 0.5:
+            badges.append({
+                'icon': '🛡️',
+                'title': 'Data Guardian',
+                'description': f'Access to {controlled_projects} controlled-access projects',
+                'earned': True,
+                'special': False
+            })
+        elif open_projects >= 20:
             badges.append({
                 'icon': '🌐',
                 'title': 'Open Data Evangelist',
                 'description': f'Champion of open science with {open_projects} open-access projects',
                 'earned': True,
-                'special': open_projects >= 10
+                'special': open_projects >= 50
+            })
+        elif open_projects >= 10:
+            badges.append({
+                'icon': '📖',
+                'title': 'Open Science Advocate',
+                'description': f'Supports open science with {open_projects} open projects',
+                'earned': True,
+                'special': False
             })
     
-    # Night Owl Badge
-    if night_owl_score >= 30:
+    # Time-based badges
+    if night_owl_score >= 50:
         badges.append({
             'icon': '🦉',
             'title': 'Night Owl',
             'description': f'{night_owl_score:.0f}% of downloads after hours',
             'earned': True,
-            'special': night_owl_score >= 50
+            'special': night_owl_score >= 70
+        })
+    elif night_owl_score >= 30:
+        badges.append({
+            'icon': '🌙',
+            'title': 'Evening Explorer',
+            'description': f'{night_owl_score:.0f}% of activity after 6pm',
+            'earned': True,
+            'special': False
         })
     
-    # Early Bird Badge
-    if early_bird_score >= 15:
+    if early_bird_score >= 25:
         badges.append({
             'icon': '🐦',
             'title': 'Early Bird',
             'description': f'{early_bird_score:.0f}% of downloads before 9am',
             'earned': True,
-            'special': early_bird_score >= 25
+            'special': early_bird_score >= 40
+        })
+    elif early_bird_score >= 15:
+        badges.append({
+            'icon': '🌅',
+            'title': 'Morning Person',
+            'description': f'{early_bird_score:.0f}% of activity before 9am',
+            'earned': True,
+            'special': False
+        })
+    
+    # Weekend warrior badge
+    if weekend_score >= 40:
+        badges.append({
+            'icon': '🏖️',
+            'title': 'Weekend Warrior',
+            'description': f'{weekend_score:.0f}% of downloads on weekends',
+            'earned': True,
+            'special': weekend_score >= 50
+        })
+    elif weekend_score >= 25:
+        badges.append({
+            'icon': '📅',
+            'title': 'Flexible Schedule',
+            'description': f'{weekend_score:.0f}% weekend activity',
+            'earned': True,
+            'special': False
+        })
+    
+    # File download badges
+    if file_count >= 10000:
+        badges.append({
+            'icon': '📦',
+            'title': 'Data Hoarder',
+            'description': f'Downloaded {file_count:,} files this year',
+            'earned': True,
+            'special': file_count >= 50000
+        })
+    elif file_count >= 5000:
+        badges.append({
+            'icon': '📚',
+            'title': 'Data Collector',
+            'description': f'Downloaded {file_count:,} files',
+            'earned': True,
+            'special': False
+        })
+    elif file_count >= 1000:
+        badges.append({
+            'icon': '📥',
+            'title': 'Active Downloader',
+            'description': f'Downloaded {file_count:,} files',
+            'earned': True,
+            'special': False
+        })
+    
+    # Data size badges
+    if total_size_gb >= 1000:
+        badges.append({
+            'icon': '💾',
+            'title': 'Terabyte Titan',
+            'description': f'Downloaded {total_size_gb:.1f} TB of data',
+            'earned': True,
+            'special': total_size_gb >= 5000
+        })
+    elif total_size_gb >= 500:
+        badges.append({
+            'icon': '🗄️',
+            'title': 'Data Archivist',
+            'description': f'Downloaded {total_size_gb:.1f} GB of data',
+            'earned': True,
+            'special': False
+        })
+    elif total_size_gb >= 100:
+        badges.append({
+            'icon': '💿',
+            'title': 'Data Enthusiast',
+            'description': f'Downloaded {total_size_gb:.1f} GB',
+            'earned': True,
+            'special': False
+        })
+    
+    # Activity consistency badges
+    if active_days >= 300:
+        badges.append({
+            'icon': '🔥',
+            'title': 'Daily Dedication',
+            'description': f'Active {active_days} days this year',
+            'earned': True,
+            'special': active_days >= 350
+        })
+    elif active_days >= 200:
+        badges.append({
+            'icon': '📆',
+            'title': 'Consistent Contributor',
+            'description': f'Active {active_days} days',
+            'earned': True,
+            'special': False
+        })
+    elif active_days >= 100:
+        badges.append({
+            'icon': '✅',
+            'title': 'Regular User',
+            'description': f'Active {active_days} days',
+            'earned': True,
+            'special': False
+        })
+    
+    # Creation badges
+    if total_creations >= 1000:
+        badges.append({
+            'icon': '🏗️',
+            'title': 'Content Creator',
+            'description': f'Created {total_creations:,} items on Synapse',
+            'earned': True,
+            'special': total_creations >= 5000
+        })
+    elif total_creations >= 500:
+        badges.append({
+            'icon': '✏️',
+            'title': 'Active Creator',
+            'description': f'Created {total_creations:,} items',
+            'earned': True,
+            'special': False
+        })
+    elif total_creations >= 100:
+        badges.append({
+            'icon': '📝',
+            'title': 'Contributor',
+            'description': f'Created {total_creations:,} items',
+            'earned': True,
+            'special': False
+        })
+    
+    if files_created >= 1000:
+        badges.append({
+            'icon': '📄',
+            'title': 'File Factory',
+            'description': f'Created {files_created:,} files',
+            'earned': True,
+            'special': files_created >= 5000
+        })
+    
+    # File size preference badges
+    if comparison_ratio >= 2.0:
+        badges.append({
+            'icon': '🐋',
+            'title': 'Big Data Lover',
+            'description': f'Prefers files {comparison_ratio:.1f}x larger than average',
+            'earned': True,
+            'special': comparison_ratio >= 3.0
+        })
+    elif comparison_ratio <= 0.5:
+        badges.append({
+            'icon': '⚡',
+            'title': 'Lightweight Champion',
+            'description': 'Prefers smaller, efficient files',
+            'earned': True,
+            'special': comparison_ratio <= 0.3
+        })
+    
+    # Busiest day badge
+    if busiest_day_downloads >= 1000:
+        badges.append({
+            'icon': '💥',
+            'title': 'Power Session',
+            'description': f'Peak day: {busiest_day_downloads:,} downloads',
+            'earned': True,
+            'special': busiest_day_downloads >= 5000
+        })
+    elif busiest_day_downloads >= 500:
+        badges.append({
+            'icon': '📈',
+            'title': 'Intense Day',
+            'description': f'Peak day: {busiest_day_downloads:,} downloads',
+            'earned': True,
+            'special': False
+        })
+    
+    # Collaboration badges
+    if collaborator_count >= 20:
+        badges.append({
+            'icon': '🤝',
+            'title': 'Social Butterfly',
+            'description': f'Connected with {collaborator_count} researchers',
+            'earned': True,
+            'special': collaborator_count >= 50
+        })
+    elif collaborator_count >= 10:
+        badges.append({
+            'icon': '👥',
+            'title': 'Team Player',
+            'description': f'Connected with {collaborator_count} researchers',
+            'earned': True,
+            'special': False
+        })
+    elif collaborator_count >= 5:
+        badges.append({
+            'icon': '🔗',
+            'title': 'Network Builder',
+            'description': f'Connected with {collaborator_count} researchers',
+            'earned': True,
+            'special': False
         })
     
     # Generate HTML
@@ -2653,13 +3090,12 @@ def generate_wrapped(
             size_comparison_text = "You prefer smaller, lighter files"
     else:
         comparison_percent, size_comparison_text = 50, "Platform comparison unavailable"
+        comparison_ratio = 1.0
     
     # Power user ranking and access badges
     percentile_rank = float(ranking_df.iloc[0].get('percentile_rank', 1.0) or 1.0) * 100 if not ranking_df.empty else 100.0
     controlled_projects = int(access_req_df.iloc[0].get('controlled_projects', 0) or 0) if not access_req_df.empty else 0
     open_projects = int(access_req_df.iloc[0].get('open_projects', 0) or 0) if not access_req_df.empty else 0
-    
-    badges_html = generate_badges_html(project_count, percentile_rank, controlled_projects, open_projects, night_owl_score, early_bird_score)
     
     # Generate component HTML for the new template
     top_projects_html = generate_top_projects_html(top_projects_df.head(10))
@@ -2705,6 +3141,31 @@ def generate_wrapped(
     
     # Total creations is the actual sum
     total_creations = projects_created + files_created + tables_created + folders_created + other_created
+    
+    # Calculate total size in GB for badges
+    total_size_gb = total_size / (1024 ** 3) if total_size > 0 else 0
+    
+    # Get collaborator count
+    collaborator_count = len(collaborators_df) if not collaborators_df.empty else 0
+    
+    # Generate badges (after all data is calculated)
+    badges_html = generate_badges_html(
+        project_count=project_count,
+        percentile_rank=percentile_rank,
+        controlled_projects=controlled_projects,
+        open_projects=open_projects,
+        night_owl_score=night_owl_score,
+        early_bird_score=early_bird_score,
+        file_count=file_count,
+        total_size_gb=total_size_gb,
+        active_days=active_days,
+        weekend_score=weekend_score,
+        total_creations=total_creations,
+        files_created=files_created,
+        comparison_ratio=comparison_ratio,
+        busiest_day_downloads=busiest_day_downloads,
+        collaborator_count=collaborator_count
+    )
     
     # Calculate active percentage (out of 365 days)
     active_percentage = round((active_days / 365) * 100, 1)
