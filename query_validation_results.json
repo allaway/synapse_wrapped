@@ -1,0 +1,181 @@
+{
+  "get_user_id_from_username": {
+    "status": "success",
+    "rows": 1,
+    "elapsed_seconds": 0.300444,
+    "columns": [
+      "USER_ID",
+      "USER_NAME",
+      "EMAIL"
+    ],
+    "error": null
+  },
+  "query_user_files_downloaded": {
+    "status": "success",
+    "rows": 1,
+    "elapsed_seconds": 0.33491,
+    "columns": [
+      "FILE_COUNT",
+      "TOTAL_SIZE_BYTES",
+      "PROJECT_COUNT"
+    ],
+    "error": null
+  },
+  "query_user_top_projects": {
+    "status": "success",
+    "rows": 5,
+    "elapsed_seconds": 0.276676,
+    "columns": [
+      "PROJECT_ID",
+      "PROJECT_NAME",
+      "FILE_COUNT",
+      "TOTAL_SIZE_BYTES",
+      "ACCESS_DAYS"
+    ],
+    "error": null
+  },
+  "query_user_all_projects": {
+    "status": "success",
+    "rows": 62,
+    "elapsed_seconds": 0.231944,
+    "columns": [
+      "PROJECT_ID",
+      "PROJECT_NAME"
+    ],
+    "error": null
+  },
+  "query_user_active_days": {
+    "status": "success",
+    "rows": 1,
+    "elapsed_seconds": 0.291728,
+    "columns": [
+      "ACTIVE_DAYS"
+    ],
+    "error": null
+  },
+  "query_user_activity_by_date": {
+    "status": "success",
+    "rows": 128,
+    "elapsed_seconds": 0.244157,
+    "columns": [
+      "ACTIVITY_DATE",
+      "ACTIVITY_COUNT"
+    ],
+    "error": null
+  },
+  "query_user_activity_by_month": {
+    "status": "success",
+    "rows": 12,
+    "elapsed_seconds": 0.258483,
+    "columns": [
+      "MONTH",
+      "ACTIVE_DAYS",
+      "FILES_DOWNLOADED",
+      "PROJECTS_ACCESSED"
+    ],
+    "error": null
+  },
+  "query_user_activity_by_hour": {
+    "status": "success",
+    "rows": 24,
+    "elapsed_seconds": 0.754609,
+    "columns": [
+      "HOUR_OF_DAY",
+      "DOWNLOAD_COUNT",
+      "UNIQUE_FILES"
+    ],
+    "error": null
+  },
+  "query_user_collaboration_network": {
+    "status": "success",
+    "rows": 16381,
+    "elapsed_seconds": 1.357133,
+    "columns": [
+      "USER_ID",
+      "SHARED_PROJECTS",
+      "SHARED_FILES",
+      "COLLABORATION_SCORE"
+    ],
+    "error": null
+  },
+  "query_user_top_collaborators": {
+    "status": "success",
+    "rows": 5,
+    "elapsed_seconds": 0.287221,
+    "columns": [
+      "USER_ID",
+      "SHARED_PROJECTS",
+      "SHARED_FILES",
+      "COLLABORATION_SCORE",
+      "COLLABORATOR_NAME"
+    ],
+    "error": null
+  },
+  "query_user_creations": {
+    "status": "success",
+    "rows": 5,
+    "elapsed_seconds": 0.259675,
+    "columns": [
+      "NODE_TYPE",
+      "CREATION_COUNT"
+    ],
+    "error": null
+  },
+  "query_user_first_download": {
+    "status": "success",
+    "rows": 1,
+    "elapsed_seconds": 0.256166,
+    "columns": [
+      "FIRST_DOWNLOAD_DATE",
+      "FILE_NAME",
+      "PROJECT_NAME"
+    ],
+    "error": null
+  },
+  "query_user_busiest_day": {
+    "status": "success",
+    "rows": 1,
+    "elapsed_seconds": 0.238154,
+    "columns": [
+      "BUSIEST_DATE",
+      "DOWNLOAD_COUNT",
+      "UNIQUE_FILES",
+      "PROJECTS_ACCESSED",
+      "TOTAL_SIZE_BYTES"
+    ],
+    "error": null
+  },
+  "query_user_largest_download": {
+    "status": "success",
+    "rows": 1,
+    "elapsed_seconds": 0.332358,
+    "columns": [
+      "FILE_HANDLE_ID",
+      "FILE_NAME",
+      "CONTENT_SIZE",
+      "RECORD_DATE",
+      "PROJECT_NAME"
+    ],
+    "error": null
+  },
+  "query_user_average_file_size": {
+    "status": "success",
+    "rows": 1,
+    "elapsed_seconds": 0.57434,
+    "columns": [
+      "AVG_FILE_SIZE",
+      "MEDIAN_FILE_SIZE"
+    ],
+    "error": null
+  },
+  "query_platform_average_file_size": {
+    "status": "success",
+    "rows": 1,
+    "elapsed_seconds": 0.350474,
+    "columns": [
+      "AVG_FILE_SIZE",
+      "MEDIAN_FILE_SIZE"
+    ],
+    "error": null
+  }
+}
