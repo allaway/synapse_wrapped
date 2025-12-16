@@ -883,6 +883,50 @@ def get_html_template() -> str:
             margin-top: 40px;
         }
         
+        /* Share button */
+        .share-btn {
+            margin-top: 30px;
+            padding: 15px 40px;
+            font-size: 1rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+            border: none;
+            border-radius: 50px;
+            color: var(--dark-bg);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .share-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: btnShine 3s infinite;
+        }
+        
+        .share-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(0, 255, 247, 0.5);
+        }
+        
+        .share-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .share-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
         /* Final slide */
         .final-slide h2 {
             font-family: 'Orbitron', monospace;
@@ -1528,6 +1572,9 @@ def get_html_template() -> str:
                         <div class="stat-label">Items Created</div>
                     </div>
                 </div>
+                <button class="share-btn animate-in" onclick="shareWrapped()" id="share-btn">
+                    ✨ Share Your Synapse Wrapped
+                </button>
                 <div class="slide-footer animate-in">
             <p>Generated on {generation_date}</p>
             <p>Powered by Synapse Data Warehouse</p>
@@ -1637,6 +1684,146 @@ def get_html_template() -> str:
         function goToSlide(index) {
             currentSlide = index;
             updateSlide();
+        }
+        
+        // Share functionality - draw static image with Canvas API
+        function shareWrapped() {
+            const shareBtn = document.getElementById('share-btn');
+            
+            try {
+                // Disable button and show loading state
+                shareBtn.disabled = true;
+                shareBtn.textContent = '📸 Creating image...';
+                
+                // Create canvas
+                const canvas = document.createElement('canvas');
+                canvas.width = 1920;
+                canvas.height = 1080;
+                const ctx = canvas.getContext('2d');
+                
+                // Draw background gradient (matching the slide)
+                const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+                gradient.addColorStop(0, '#0a0a0f');
+                gradient.addColorStop(0.5, '#1a0a1f');
+                gradient.addColorStop(1, '#0a0a0f');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Add decorative glowing circles
+                ctx.fillStyle = 'rgba(0, 255, 247, 0.03)';
+                for (let i = 0; i < 15; i++) {
+                    const x = Math.random() * canvas.width;
+                    const y = Math.random() * canvas.height;
+                    const size = Math.random() * 150 + 100;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Add magenta/purple accents
+                ctx.fillStyle = 'rgba(255, 0, 255, 0.02)';
+                for (let i = 0; i < 10; i++) {
+                    const x = Math.random() * canvas.width;
+                    const y = Math.random() * canvas.height;
+                    const size = Math.random() * 120 + 80;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Title with gradient effect (simulated with cyan) - matching h2 on final slide
+                ctx.fillStyle = '#00fff7';
+                ctx.font = 'bold 96px Orbitron, monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText("That's a Wrap! 🎉", canvas.width / 2, 180);
+                
+                // Tagline - matching final slide tagline
+                ctx.fillStyle = '#a0a0b0';
+                ctx.font = '36px "Exo 2", sans-serif';
+                ctx.fillText("Here's to another year of groundbreaking research 🔬", canvas.width / 2, 250);
+                
+                // Stats data with emojis
+                const stats = [
+                    { emoji: '📥', value: '{file_count}', label: 'Files Downloaded' },
+                    { emoji: '📅', value: '{active_days}', label: 'Active Days' },
+                    { emoji: '🔭', value: '{project_count}', label: 'Projects Explored' },
+                    { emoji: '✨', value: '{total_creations}', label: 'Items Created' }
+                ];
+                
+                // Draw stats in horizontal layout like the slide
+                const startY = 400;
+                const statWidth = 380;
+                const spacing = 40;
+                const totalWidth = stats.length * statWidth + (stats.length - 1) * spacing;
+                const startX = (canvas.width - totalWidth) / 2;
+                
+                stats.forEach((stat, index) => {
+                    const x = startX + index * (statWidth + spacing);
+                    const y = startY;
+                    
+                    // Draw subtle background box
+                    ctx.fillStyle = 'rgba(18, 18, 26, 0.5)';
+                    ctx.fillRect(x, y, statWidth, 240);
+                    
+                    // Draw border with gradient effect (cyan glow)
+                    ctx.strokeStyle = 'rgba(0, 255, 247, 0.3)';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(x, y, statWidth, 240);
+                    
+                    // Draw emoji at the top
+                    ctx.font = '48px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(stat.emoji, x + statWidth / 2, y + 70);
+                    
+                    // Draw value (number) - matching .stat-value (Orbitron monospace)
+                    ctx.fillStyle = '#00fff7';
+                    ctx.font = 'bold 64px Orbitron, monospace';
+                    ctx.fillText(stat.value, x + statWidth / 2, y + 150);
+                    
+                    // Draw label - matching .stat-label (Exo 2, uppercase)
+                    ctx.fillStyle = '#a0a0b0';
+                    ctx.font = '18px "Exo 2", sans-serif';
+                    ctx.fillText(stat.label.toUpperCase(), x + statWidth / 2, y + 195);
+                });
+                
+                // Footer - matching slide footer style
+                ctx.fillStyle = '#a0a0b0';
+                ctx.font = '28px "Exo 2", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('SYNAPSE WRAPPED {year} 🧬', canvas.width / 2, 900);
+                
+                ctx.font = '24px "Exo 2", sans-serif';
+                ctx.fillStyle = '#00fff7';
+                ctx.fillText('{username}', canvas.width / 2, 960);
+                
+                ctx.fillStyle = '#6b7280';
+                ctx.font = '20px "Exo 2", sans-serif';
+                ctx.fillText('Generated on {generation_date} • Powered by Synapse Data Warehouse', canvas.width / 2, 1020);
+                
+                // Convert to blob and download
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        const year = '{year}';
+                        const username = '{username}'.replace('@', '_at_').replace(/[^a-zA-Z0-9_]/g, '_');
+                        link.download = `synapse_wrapped_{year}_{username}.png`;
+                        link.href = url;
+                        link.click();
+                        URL.revokeObjectURL(url);
+                    }
+                    
+                    // Restore button
+                    shareBtn.disabled = false;
+                    shareBtn.textContent = '✨ Share Your Synapse Wrapped';
+                }, 'image/png', 1.0);
+                
+            } catch (error) {
+                console.error('Error creating image:', error);
+                shareBtn.disabled = false;
+                shareBtn.textContent = '✨ Share Your Synapse Wrapped';
+                alert('Unable to create image. Error: ' + error.message);
+            }
         }
         
         // Keyboard navigation
