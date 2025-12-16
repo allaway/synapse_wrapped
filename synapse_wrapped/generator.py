@@ -1807,7 +1807,7 @@ def get_html_template() -> str:
                         const link = document.createElement('a');
                         const year = '{year}';
                         const username = '{username}'.replace('@', '_at_').replace(/[^a-zA-Z0-9_]/g, '_');
-                        link.download = `synapse_wrapped_${year}_${username}.png`;
+                        link.download = `synapse_wrapped_{year}_{username}.png`;
                         link.href = url;
                         link.click();
                         URL.revokeObjectURL(url);
