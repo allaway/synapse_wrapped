@@ -883,6 +883,50 @@ def get_html_template() -> str:
             margin-top: 40px;
         }
         
+        /* Share button */
+        .share-btn {
+            margin-top: 30px;
+            padding: 15px 40px;
+            font-size: 1rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+            border: none;
+            border-radius: 50px;
+            color: var(--dark-bg);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .share-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: btnShine 3s infinite;
+        }
+        
+        .share-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(0, 255, 247, 0.5);
+        }
+        
+        .share-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .share-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
         /* Final slide */
         .final-slide h2 {
             font-family: 'Orbitron', monospace;
@@ -1528,6 +1572,9 @@ def get_html_template() -> str:
                         <div class="stat-label">Items Created</div>
                     </div>
                 </div>
+                <button class="share-btn animate-in" onclick="shareWrapped()" id="share-btn">
+                    ✨ Share Your Synapse Wrapped
+                </button>
                 <div class="slide-footer animate-in">
             <p>Generated on {generation_date}</p>
             <p>Powered by Synapse Data Warehouse</p>
